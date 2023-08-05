@@ -13,26 +13,26 @@ matplotlib.use('Agg')
 app=FastAPI()
 
 def calc(valor_aluguel, valor_imovel, taxa_valorizacao_imovel,taxa_reajuste_aluguel, taxa_juros_aplicacao,anos):
-    valor_aluguel = float(valor_aluguel)
-    valor_imovel = float(valor_imovel)
+    valor_aluguel           = float(valor_aluguel)
+    valor_imovel            = float(valor_imovel)
     taxa_valorizacao_imovel = float(taxa_valorizacao_imovel)/100
-    taxa_reajuste_aluguel = float(taxa_reajuste_aluguel)/100
-    taxa_juros_aplicacao = float(taxa_juros_aplicacao)/100
-    anos = int(anos)
+    taxa_reajuste_aluguel   = float(taxa_reajuste_aluguel)/100
+    taxa_juros_aplicacao    = float(taxa_juros_aplicacao)/100
+    anos                    = int(anos)
 
 # Transformando a taxa de juros de anual para mensal
-    taxa_juros_aplicacao_mensal = (1 + taxa_juros_aplicacao) ** (1/12) - 1
+    taxa_juros_aplicacao_mensal   = (1 + taxa_juros_aplicacao) ** (1/12) - 1
     taxa_juros_valorizacao_mensal = (1 + taxa_valorizacao_imovel) ** (1/12) - 1
 
 # Inicializando os valores iniciais
-    valor_aplicacao = valor_imovel
+    valor_aplicacao     = valor_imovel
     valor_aluguel_atual = valor_aluguel
 
     # Inicializando listas para armazenar os resultados mês a mês
-    meses = []
+    meses             = []
     valores_aplicacao = []
-    valores_imovel = []
-    turnover = []
+    valores_imovel    = []
+    turnover          = []
 
     # Simulando o cenário mês a mês ao longo dos anos (entrada da função)
     for mes in range(1, 12*anos+1):
@@ -51,7 +51,8 @@ def calc(valor_aluguel, valor_imovel, taxa_valorizacao_imovel,taxa_reajuste_alug
         meses.append(mes)
         valores_aplicacao.append(valor_aplicacao)
         valores_imovel.append(valor_imovel)
-
+        
+        # Análise de turnover
         if mes == 1:
           if valor_aplicacao > valor_imovel:
             montante_maior = "A"
@@ -78,16 +79,16 @@ def calc(valor_aluguel, valor_imovel, taxa_valorizacao_imovel,taxa_reajuste_alug
     for mes, aplicacao, imovel, ponto_turnover in lista_combinada:
         dicionario[mes] = (aplicacao, imovel, ponto_turnover)
 
-
     return dicionario
 
 @app.get('/calculo/{valor_aluguel}/{valor_imovel}/{taxa_valorizacao_imovel}/{taxa_reajuste_aluguel}/{taxa_juros_aplicacao}/{anos}')
-def obter_resultado(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_reajuste_aluguel,taxa_juros_aplicacao,anos):
+def obter_calculo_mes(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_reajuste_aluguel,taxa_juros_aplicacao,anos):
     resultado = calc(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_reajuste_aluguel,taxa_juros_aplicacao,anos)
+    
     return resultado
 
 @app.get('/resumo/{valor_aluguel}/{valor_imovel}/{taxa_valorizacao_imovel}/{taxa_reajuste_aluguel}/{taxa_juros_aplicacao}/{anos}')
-def obter_resultado1(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_reajuste_aluguel,taxa_juros_aplicacao,anos):
+def obter_resumo(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_reajuste_aluguel,taxa_juros_aplicacao,anos):
     resultado    = calc(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_reajuste_aluguel,taxa_juros_aplicacao,anos)
     chave_ultima = max(resultado.keys())
     valor_ultima = resultado[chave_ultima]
@@ -133,12 +134,12 @@ def obter_resultado1(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_rea
     return texto
 
 @app.get('/grafico/{valor_aluguel}/{valor_imovel}/{taxa_valorizacao_imovel}/{taxa_reajuste_aluguel}/{taxa_juros_aplicacao}/{anos}',response_class=HTMLResponse)
-def obter_resultado2(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_reajuste_aluguel,taxa_juros_aplicacao,anos):
+def obter_grafico(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_reajuste_aluguel,taxa_juros_aplicacao,anos):
     resultado = calc(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_reajuste_aluguel,taxa_juros_aplicacao,anos)
     
-    meses = list(resultado.keys())
+    meses     = list(resultado.keys())
     aplicacao = [valor[0] for valor in resultado.values()]
-    imovel = [valor[1] for valor in resultado.values()]
+    imovel    = [valor[1] for valor in resultado.values()]
 
     # Cria o gráfico usando Matplotlib
     plt.plot(meses, aplicacao, label='Montante Aplicação')
@@ -161,11 +162,11 @@ def obter_resultado2(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_rea
 
     # Monta a tag HTML com a imagem incorporada
     html_content = f"<img src='data:image/png;base64,{encoded_graph}'/>"
-
+    
     return html_content
 
 @app.get('/exporta/{valor_aluguel}/{valor_imovel}/{taxa_valorizacao_imovel}/{taxa_reajuste_aluguel}/{taxa_juros_aplicacao}/{anos}')
-def obter_resultado3(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_reajuste_aluguel,taxa_juros_aplicacao,anos):
+def exportar_arquivo(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_reajuste_aluguel,taxa_juros_aplicacao,anos):
     resultado = calc(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_reajuste_aluguel,taxa_juros_aplicacao,anos)
     
     try:
@@ -176,5 +177,5 @@ def obter_resultado3(valor_aluguel,valor_imovel,taxa_valorizacao_imovel,taxa_rea
       mensagem = f"Resultados mês a mês exportados com sucesso no arquivo {arquivo_json}"
     except:
       mensagem = f"Falha ao tentar exportar arquivo"
-      
+    
     return mensagem
