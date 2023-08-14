@@ -82,5 +82,8 @@ Exporta o arquivo dados.json contendo os resultados mês a mês:
 
 ## 👨‍💻Autores
 
-mauro.dominguesjr@gmail.com  
-anazanetti123@gmail.com
+Ana Zanetti:  
+https://github.com/anazanetti  
+
+Mauro Domingues:  
+https://github.com/maurodomingues  
